@@ -21,7 +21,7 @@ def input_grades(num_students, num_subjects):
 
 # 2. The Worker Function (Target for Threads)
 def compute_gwa(grades, student_id):
-    # Simulate a tiny delay so you can see threads interleaving (optional but helpful)
+    # Simulate a tiny delay so you can see threads interleaving
     time.sleep(0.001) 
     
     if not grades:
@@ -46,7 +46,6 @@ def main():
         threads = []
         
         # Phase 2: Create Threads (1 Thread per Student)
-        # This matches your Multiprocessing logic: 1 Core per Student
         for i, student_grades in enumerate(student_matrix):
             t = threading.Thread(target=compute_gwa, args=(student_grades, i+1))
             threads.append(t)
