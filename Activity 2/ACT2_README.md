@@ -23,3 +23,13 @@ tasks?
 6. How did your group apply creative coding or algorithmic solutions in this lab?
 
     We applied creative coding by rejecting the inefficient method of creating a new process for every single grade. We restructured the data into student-level batches and assigned one process to handle a full list of grades. For multithreading we implemented a responsive system where every new grade input immediately creates a separate thread to compute the GWA. This contrast demonstrated that threads are lightweight enough to spawn individually for rapid tasks unlike the heavier processes.
+
++-----------------+-----------------+------------+----------------+
+| Method          | Execution Order | GWA Output | Execution Time |
++-----------------+-----------------+------------+----------------+
+| Multithreading  |concurrent thread|            |                |
+|                 | execcution      |  67.00     |0.001615 seconds|
++-----------------+-----------------+------------+----------------+
+| Multiprocessing |parralel process |            |                |
+|                 | execution       |  67.00     |0.029768 seconds|
++-----------------+-----------------+------------+----------------+
