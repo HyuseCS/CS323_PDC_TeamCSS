@@ -1,4 +1,5 @@
 import threading
+import time
 
 FINAL_GWA = 0
 LOCK = threading.Lock()
@@ -26,6 +27,8 @@ def get_number(input_text):
 def main():
     grades_list = [] 
 
+    
+
     grades_count = get_number("Number of grades: ")
     threads = []
     
@@ -33,15 +36,16 @@ def main():
         grades_list.append(get_number("Enter grade: "))
         t = threading.Thread(target=compute_gwa, args=(grades_list,))
         threads.append(t)
-    
+    start = time.time()
     for t in threads:
         t.start()
 
     for t in threads:
         t.join()
+    end = time.time()
 
     print("Final GWA:", FINAL_GWA) 
-
+    print(f"Time Taken: {end - start:.6f} seconds")
 
 if __name__ == "__main__":
     main()
