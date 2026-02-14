@@ -10,7 +10,12 @@
 
 4. Explain why ProcessPoolExecutor enables true parallelism, including memory
 space separation and GIL behavior.
+    * By using process-based concurrency, which explicitly allocates distinct memory spaces to each execution instance instead of sharing memory like threads do, ProcessPoolExecutor makes true parallelism possible. The system efficiently uses several CPU cores at once to run the code by dividing the same computation workload among several separate processes. By avoiding the drawbacks of shared memory concurrency, this architecture enables various computations to execute on the hardware simultaneously.
+
 5. Evaluate scalability if the system increases from 5 to 10,000 employees. Which
 approach scales better and why?
+    * The Data Parallelism method with ProcessPoolExecutor is the best option for scalability when expanding a payroll system from five to ten thousand workers. This method is intended especially for situations in which a payroll computation function or other similar operation needs to be applied to a sizable collection of various data elements at the same time. Distributing identical computations across multiple processes enables the system to maximize resource utilization and effectively handle the increased load, as the volume of data, rather than the variety of tasks, is the bottleneck in this scenario.
+
 6. Provide a real-world payroll system example. Indicate where Task Parallelism and
 Data Parallelism would be applied, and which executor you would use.
+    * The core computation of net salary for the complete employee roster would be done using data parallelism in a real-world payroll system, using ProcessPoolExecutor to apply the same tax and deduction formulas to thousands of employee records at once. The handling of discrete, independent tasks for a single worker, such as concurrently recording a transaction, creating a payslip PDF, and sending a notification email, would be suitable for task parallelism. The best option for handling concurrency in these discrete operational tasks that use the same underlying data but carry out different operations would be ThreadPoolExecutor.
