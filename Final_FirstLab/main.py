@@ -1,71 +1,71 @@
-from mpi4py import MPI
-from multiprocessing import Manager
+import multiprocessing
 import random
+import sys
 
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
+# The Goal: Use a Manager list for shared memory without freezing MPI.
+# We initialize inside the __main__ block to ensure clean process separation.
 
-ITEMS = [
-    f"Mechanical Keyboard (75% Layout)",
-    "USB-C Docking Station",
-    "Active Noise-Cancelling Earbuds",
-    "Portable Power Bank (20,000mAh)"
-]
+if __name__ == '__main__':
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
 
-def main():
-    # 1. Initialize the multiprocessing Manager and shared list
-    manager = Manager()
-    shared_orders = manager.list()
+    ITEMS = [
+        "Mechanical Keyboard (75% Layout)",
+        "USB-C Docking Station",
+        "Active Noise-Cancelling Earbuds",
+        "Portable Power Bank (20,000mAh)"
+    ]
 
-    # master
+    # Rank 0 (Master) manages the shared list
     if rank == 0:
-        worker_assigned = 1
+        print(f"Master (Rank 0): Starting Manager Server...")
+        manager = multiprocessing.Manager()
+        shared_orders = manager.list()
+        print(f"Master (Rank 0): Manager is ready.")
         
-        # generate 8 orders
-        for i in range(8):
-            generate_order(i, worker_assigned)
+        try:
+            # 1. Distribute 8 orders to workers
+            for i in range(8):
+                worker_id = (i % (size - 1)) + 1
+                order = {'order_id': i, 'item_name': random.choice(ITEMS)}
+                comm.send(order, dest=worker_id)
 
-            worker_assigned += 1
-            if worker_assigned >= size:
-                worker_assigned = 1
+            # 2. Collect reports back from workers and store in shared memory
+            # (add lock here)
+            print(f"Master (Rank 0): Waiting for results...")
+            for i in range(8):
+                processed_data = comm.recv(source=MPI.ANY_SOURCE)
+                
+                # Critical Section: Adding data to the shared Manager structure
+                shared_orders.append(processed_data)
+                print(f"Master (Rank 0): Progress {i+1}/8")
 
-        terminate_workers()
+            # Signal workers to finish
+            for worker_id in range(1, size):
+                comm.send("TERMINATE", dest=worker_id)
 
-        # Wait for all workers to finish appending before printing the final list
-        comm.Barrier()
-        
-        # 2. Master collects and prints the complete list of orders
-        print("\n--- Final Completed Orders in Shared Memory ---")
-        for completed_order in shared_orders:
-            print(completed_order)
-
-    # worker
+            # 3. Final output from the shared Manager structure
+            print("\n--- Final Completed Orders in Shared Memory ---")
+            for completed_order in shared_orders:
+                print(completed_order)
+                
+        finally:
+            # Explicitly shut down the manager to release the port/socket
+            manager.shutdown()
+            print("Master (Rank 0): Manager shut down successfully.")
+            
     else:
+        # Worker logic (Ranks 1, 2, 3...)
         while True:
             data = comm.recv(source=0)
-
             if data == "TERMINATE":
                 break
             
             print(f"Worker {rank} processing item {data['item_name']} (Order ID: {data['order_id']})")
             
-            # 3. Workers append processed orders to the shared structure
-            shared_orders.append(data)
-                
-        # Sync up with the master process once the while loop breaks
-        comm.Barrier()
-
-
-def generate_order(order_id, worker_assigned):
-    order = {'order_id': order_id, 'item_name': ITEMS[random.randint(0, 3)]} 
-    comm.send(order, dest=worker_assigned)
-
-
-def terminate_workers():
-    for worker_id in range(1, size):
-        comm.send("TERMINATE", worker_id)
-
-
-if _name_ == '_main_':
-    main()
+            #(Add delay here)
+            
+            # Sends results back to Master to be stored in the Manager list
+            comm.send(data, dest=0)
