@@ -1,4 +1,5 @@
 from mpi4py import MPI
+from multiprocessing import Manager
 import random
 
 comm = MPI.COMM_WORLD
@@ -13,6 +14,10 @@ ITEMS = [
 ]
 
 def main():
+    # 1. Initialize the multiprocessing Manager and shared list
+    manager = Manager()
+    shared_orders = manager.list()
+
     # master
     if rank == 0:
         worker_assigned = 1
@@ -27,6 +32,14 @@ def main():
 
         terminate_workers()
 
+        # Wait for all workers to finish appending before printing the final list
+        comm.Barrier()
+        
+        # 2. Master collects and prints the complete list of orders
+        print("\n--- Final Completed Orders in Shared Memory ---")
+        for completed_order in shared_orders:
+            print(completed_order)
+
     # worker
     else:
         while True:
@@ -34,8 +47,14 @@ def main():
 
             if data == "TERMINATE":
                 break
-
+            
             print(f"Worker {rank} processing item {data['item_name']} (Order ID: {data['order_id']})")
+            
+            # 3. Workers append processed orders to the shared structure
+            shared_orders.append(data)
+                
+        # Sync up with the master process once the while loop breaks
+        comm.Barrier()
 
 
 def generate_order(order_id, worker_assigned):
@@ -48,6 +67,5 @@ def terminate_workers():
         comm.send("TERMINATE", worker_id)
 
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     main()
-    
