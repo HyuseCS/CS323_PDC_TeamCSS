@@ -5,21 +5,7 @@ import time
 # The Goal: Use a Manager list for shared memory without freezing MPI.
 # We initialize inside the __main__ block to ensure clean process separation.
 
-if __name__ == '__main__':
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-    manager = multiprocessing.Manager()
-    shared_orders = manager.list()
-
-    ITEMS = [
-        "Mechanical Keyboard (75% Layout)",
-        "USB-C Docking Station",
-        "Active Noise-Cancelling Earbuds",
-        "Portable Power Bank (20,000mAh)"
-    ]
-
+def main(comm, rank, size, manager, shared_orders):
     # Rank 0 (Master) manages the shared list
     if rank == 0:
         print(f"Master (Rank 0): Starting Manager Server...")
@@ -37,7 +23,6 @@ if __name__ == '__main__':
             for i in range(8):
                 processed_data = comm.recv(source=MPI.ANY_SOURCE)
                 
-                # Critical Section: Adding data to the shared Manager structure
                 shared_orders.append(processed_data)
                 print(f"Master (Rank 0): Progress {i+1}/8")
 
@@ -71,3 +56,24 @@ if __name__ == '__main__':
             
             # Sends results back to Master to be stored in the Manager list
             comm.send(data, dest=0)
+
+
+
+if __name__ == '__main__':
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    manager = multiprocessing.Manager()
+    shared_orders = manager.list()
+
+    ITEMS = [
+        "Mechanical Keyboard (75% Layout)",
+        "USB-C Docking Station",
+        "Active Noise-Cancelling Earbuds",
+        "Portable Power Bank (20,000mAh)"
+    ]
+
+    main(comm, rank, size, manager, shared_orders)
+
+    
