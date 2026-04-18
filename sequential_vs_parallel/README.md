@@ -23,3 +23,9 @@ must write their own <b>individual reflection</b>, in paragraph form, discussing
     <li> I found that sequential execution was faster for the small dataset of elements because the computational work was outweighed by the overhead of process creation and synchronization. On the other hand, I discovered that parallelizing the straightforward linear search was mostly superfluous and frequently slower across all sizes because of inter-process communication costs. I learned from this exercise that parallelism is not necessary for small datasets.
 
 </ul>
+
+<b> Christian John Legaspi </b>
+<ul>
+    <li> I was tasked to do the sequential sort version of the merge sort, and upon our testing, I have observed that on small data sets it is favorable to use the sequential execution since it demonstrates that it is faster and I have also observed that there is parallel overhead when using parallel execution in small datasets. Parallelization definitely should be used on medium (in our case, 100000 values) and large datasets, since tasks are distributed evenly to all the available and alloted cpu cores.
+
+</ul>
