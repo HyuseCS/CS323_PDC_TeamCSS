@@ -10,7 +10,7 @@ must write their own <b>individual reflection</b>, in paragraph form, discussing
 
 <b>Kent Vincent Butaya</b>
 <ul>
-    <li>Parallel is definitely faster than sequential when it comes to larger datasets, i was tasked to make the parallel search algorithm, and in the tests i have, when it was time for the smaller dataset, it performed much slower than when the number of elemts where to increase, this proves that parallel is better for larger datasets.
+    <li>I was tasked to make the parallel search algorithm. i expected parallel execution to outperform sequential execution as the dataset grew, similar to how merge sort behaves,but i was wrong and the testing data proved otherwise, sequential linear search was consistently much faster, even on the 1,000,000 element dataset, this proved to me that for extremely lightweight operations like a basic search, the overhead and inter-process communication costs of parallelization far outweigh any benefits. Parallelism is highly effective for heavy operations on large datasets, but unnecessary and actually detrimental for simple linear searching.
 </ul>
 
 <b>Theodore Pagalan</b>
